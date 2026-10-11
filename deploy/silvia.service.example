@@ -6,12 +6,12 @@ After=network.target
 Type=simple
 User=silvia
 Group=silvia
-WorkingDirectory=/opt/silvia
+WorkingDirectory=/home/www/silvia
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=3000
 Environment=DATA_DIR=/var/lib/silvia
-ExecStart=/usr/bin/node /opt/silvia/server.js
+ExecStart=/usr/bin/node /home/www/silvia/server.js
 Restart=on-failure
 RestartSec=3
 UMask=0077

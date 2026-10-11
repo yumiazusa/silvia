@@ -8,12 +8,12 @@
 
 以下假设宝塔和 Node 安装在 Ubuntu **宿主机**。先确认 `node -v` 显示 18 或更高版本，并用 `command -v node` 查到 Node 的绝对路径。如果 Node 只装在宝塔 Docker 容器内，应改用容器内进程管理和持久化卷，不能直接套用下面的 systemd 服务。
 
-1. 用有 GitHub SSH 权限的账号拉代码：
+1. 用有 GitHub SSH 权限的账号拉代码。若已拉到 `/home/www/silvia`，只执行 `cd` 之后的命令：
 
    ```bash
-   sudo install -d -o "$USER" -g "$(id -gn)" -m 755 /opt/silvia
-   git clone git@github.com:yumiazusa/silvia.git /opt/silvia
-   cd /opt/silvia
+   sudo install -d -o "$USER" -g "$(id -gn)" -m 755 /home/www/silvia
+   git clone git@github.com:yumiazusa/silvia.git /home/www/silvia
+   cd /home/www/silvia
    git status --short
    node -v
    command -v node
@@ -31,7 +31,7 @@
 3. **开通公网前**，在服务器终端初始化教师账号。输入当前教师手机号和**原密码**，保持现有登录凭据。密码输入时不显示；不要把密码写进命令、环境变量或 Git。将下方 `/usr/bin/node` 替换为 `command -v node` 的实际结果：
 
    ```bash
-   sudo -u silvia env DATA_DIR=/var/lib/silvia /usr/bin/node /opt/silvia/scripts/init-teacher.js
+   sudo -u silvia env DATA_DIR=/var/lib/silvia /usr/bin/node /home/www/silvia/scripts/init-teacher.js
    sudo ls -l /var/lib/silvia/data.json
    ```
 
@@ -40,17 +40,17 @@
 4. 建 systemd 服务。先打开 [deploy/silvia.service.example](deploy/silvia.service.example)，将 `ExecStart` 的 Node 路径改成服务器实际路径，再执行：
 
    ```bash
-   sudo cp /opt/silvia/deploy/silvia.service.example /etc/systemd/system/silvia.service
+   sudo cp /home/www/silvia/deploy/silvia.service.example /etc/systemd/system/silvia.service
    sudo nano /etc/systemd/system/silvia.service
    sudo systemctl daemon-reload
    sudo systemctl enable --now silvia
    sudo systemctl status silvia
-   curl -I http://127.0.0.1:3000/
+   curl -fsS http://127.0.0.1:3000/ >/dev/null && echo OK
    ```
 
-   默认只监听 `127.0.0.1:3000`，不要在阿里云安全组中开放 3000。若 3000 已被别的服务占用，修改 service 中的 `PORT`，宝塔反向代理目标也要同步更改。
+   默认只监听 `127.0.0.1:3000`，不要在阿里云安全组中开放 3000。若 3000 已被别的服务占用，修改 service 中的 `PORT`，宝塔反向代理目标也要同步更改。若服务报无权读取项目，请检查 `/home`、`/home/www`、`/home/www/silvia` 的目录执行权限和代码读取权限。
 
-5. 在阿里云将域名解析到服务器公网 IP，安全组放通 TCP 80/443。在宝塔添加该域名的网站，设置反向代理到 `http://127.0.0.1:3000`，申请并启用 HTTPS 证书，开启 HTTP 跳转 HTTPS。网站根目录不指向 `/var/lib/silvia`。完成后浏览器访问域名，用教师账号登录。中国内地服务器使用域名时还需按接入要求完成备案。
+5. 已解析域名 `pz.cgshiyan.com`。确认阿里云安全组放通 TCP 80/443。在宝塔添加该域名的网站，设置反向代理到 `http://127.0.0.1:3000`，申请并启用 HTTPS 证书，开启 HTTP 跳转 HTTPS。网站根目录不指向 `/var/lib/silvia`。完成后浏览器访问 `https://pz.cgshiyan.com/`，用教师账号登录。中国内地服务器使用域名时还需按接入要求完成备案。
 
 ## 更新和备份
 
@@ -58,7 +58,7 @@
 
 ```bash
 sudo cp -p /var/lib/silvia/data.json /var/lib/silvia/data-before-update-$(date +%Y%m%d-%H%M%S).json
-cd /opt/silvia
+cd /home/www/silvia
 git pull --ff-only origin main
 sudo systemctl restart silvia
 sudo journalctl -u silvia -n 50 --no-pager
