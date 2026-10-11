@@ -66,6 +66,24 @@ sudo journalctl -u silvia -n 50 --no-pager
 
 定期把 `/var/lib/silvia/data.json` 另存到**另一块磁盘或异地存储**，并验证备份可读取。程序维护的 `data_backup.json` 只是同目录即时副本，不能替代异地备份。恢复时先停止服务，将备份复制为 `data.json`、设为 `silvia:silvia` 和 `600` 权限，再启动。
 
+## 从旧平台恢复进度
+
+`scripts/restore-progress.js` 支持全量恢复（`--mode all`）或只导入题库与报表（`--mode content`）。两种模式都保留服务器现有教师账号，并清空旧登录会话。全量模式会用旧文件的学生与成绩替换当前学生列表。**先把旧 `data.json` 上传到 `/var/lib/silvia/import-data.json`，不要直接覆盖正在使用的 `data.json`。**
+
+```bash
+cd /home/www/silvia
+git pull --ff-only origin main
+sudo chown silvia:silvia /var/lib/silvia/import-data.json
+sudo chmod 600 /var/lib/silvia/import-data.json
+sudo -u silvia env DATA_DIR=/var/lib/silvia node scripts/restore-progress.js --source /var/lib/silvia/import-data.json --mode all
+sudo systemctl stop silvia
+sudo -u silvia env DATA_DIR=/var/lib/silvia node scripts/restore-progress.js --source /var/lib/silvia/import-data.json --mode all --apply
+sudo systemctl start silvia
+sudo systemctl --no-pager --full status silvia
+```
+
+预览命令不会写盘；执行命令会自动生成 `data-before-restore-时间.json` 以保留服务器原数据，同时更新 `data_backup.json`。如 `node` 仅在指定绝对路径可用，用该路径替换命令中的 `node`。确认恢复后，可移走导入文件，避免重复导入。
+
 ## 本地开发与检查
 
 先运行 `node scripts/init-teacher.js`，再运行 `node server.js`。本地数据默认在项目下的 `data/`，已被 Git 忽略。设置 `DATA_DIR` 可指定独立数据目录；`HOST` 默认 `127.0.0.1`，`PORT` 默认 `3000`。运行 `node scripts/smoke-test.js` 会在临时目录测试，不修改真实教师数据。
