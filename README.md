@@ -68,13 +68,12 @@ sudo journalctl -u silvia -n 50 --no-pager
 
 ## 从旧平台恢复进度
 
-`scripts/restore-progress.js` 支持全量恢复（`--mode all`）或只导入题库与报表（`--mode content`）。两种模式都保留服务器现有教师账号，并清空旧登录会话。全量模式会用旧文件的学生与成绩替换当前学生列表。**先把旧 `data.json` 上传到 `/var/lib/silvia/import-data.json`，不要直接覆盖正在使用的 `data.json`。**
+`scripts/restore-progress.js` 支持全量恢复（`--mode all`）或只导入题库与报表（`--mode content`）。两种模式都保留服务器现有教师账号，并清空旧登录会话。全量模式会用旧文件的学生与成绩替换当前学生列表。**不要把旧 `data.json` 直接上传到 `/var/lib/silvia`，这会与正在使用的同名文件冲突。**先在宝塔文件管理中建立 `/home/www/silvia-import`，把旧 `data.json` 上传到该暂存目录，然后复制为独立的导入文件。暂存目录不应配置成网站根目录。
 
 ```bash
 cd /home/www/silvia
 git pull --ff-only origin main
-sudo chown silvia:silvia /var/lib/silvia/import-data.json
-sudo chmod 600 /var/lib/silvia/import-data.json
+sudo install -o silvia -g silvia -m 600 /home/www/silvia-import/data.json /var/lib/silvia/import-data.json
 sudo -u silvia env DATA_DIR=/var/lib/silvia node scripts/restore-progress.js --source /var/lib/silvia/import-data.json --mode all
 sudo systemctl stop silvia
 sudo -u silvia env DATA_DIR=/var/lib/silvia node scripts/restore-progress.js --source /var/lib/silvia/import-data.json --mode all --apply
