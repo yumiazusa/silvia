@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务会计实训平台</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Microsoft YaHei","SimSun",sans-serif;background:#EDF1F5;color:#283038;font-size:14px;}
+  header{background:#5F7689;color:#fff;padding:10px 18px;display:flex;align-items:center;gap:14px;height:52px;}
+  header h1{font-size:17px;margin:0;}
+  header .who{margin-left:auto;font-size:13px;opacity:.9;}
+  header button{background:#7E97AE;color:#fff;border:none;border-radius:4px;padding:6px 12px;cursor:pointer;}
+  .layout{display:flex;min-height:calc(100vh - 52px);}
+  .sidebar{width:240px;background:#46586A;color:#fff;flex-shrink:0;padding:10px 0;overflow:auto;}
+  .sidebar .ttl{padding:8px 16px;font-size:12px;opacity:.6;}
+  .sidebar .item{padding:12px 16px;cursor:pointer;border-left:4px solid transparent;font-size:14px;}
+  .sidebar .item:hover{background:#5F7689;}
+  .sidebar .item.active{background:#5F7689;border-left-color:#88A0B8;}
+  .sidebar .item .sub{font-size:12px;opacity:.7;margin-top:2px;}
+  .content{flex:1;padding:18px;overflow:auto;background:#EDF1F5;}
+  .card{background:#fff;border:1px solid #CFD8E2;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .card h2{margin:0 0 12px;font-size:16px;border-left:4px solid #5F7689;padding-left:8px;}
+  label{font-weight:600;}
+  input,select,textarea{border:1px solid #B9C4D0;border-radius:4px;padding:6px 8px;font-size:13px;font-family:inherit;width:100%;}
+  button.btn{background:#7E97AE;color:#fff;border:none;border-radius:4px;padding:7px 14px;cursor:pointer;font-size:13px;font-weight:600;}
+  button.btn:hover{background:#6E87A0;}
+  button.g{background:#8FA6BC;color:#fff;border:none;border-radius:4px;padding:7px 12px;cursor:pointer;font-size:13px;}
+  button.r{background:#B58A82;color:#fff;border:none;border-radius:4px;padding:7px 12px;cursor:pointer;font-size:13px;}
+  button.y{background:#93A2AE;color:#fff;border:none;border-radius:4px;padding:7px 12px;cursor:pointer;font-size:13px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .row > div{flex:1;min-width:120px;}
+  table{width:100%;border-collapse:collapse;margin:8px 0;}
+  th,td{border:1px solid #BCC8D6;padding:6px 8px;font-size:13px;}
+  th{background:#EDF1F5;}
+  .muted{color:#596472;font-size:12px;}
+  .pill{display:inline-block;background:#7E97AE;color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;}
+  .pill.no{background:#B9C4D0;}
+  .mstrip{display:inline-flex;gap:2px;flex-wrap:wrap;vertical-align:middle;max-width:180px;}
+  .ms{display:inline-block;min-width:16px;text-align:center;border-radius:3px;font-size:11px;line-height:16px;padding:0 2px;font-weight:600;}
+  .ms.ok{background:#E3EFE7;color:#3B6646;border:1px solid #B9D2C2;}
+  .ms.no{background:#F3E7E5;color:#A3574E;border:1px solid #E0C4BF;}
+  .err{color:#A3574E;font-size:13px;}
+  .ok{color:#4E7A5E;font-size:13px;}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-start;justify-content:center;padding-top:30px;z-index:100;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;width:1080px;max-width:96vw;max-height:90vh;overflow:auto;border-radius:8px;padding:18px;}
+  .modal h3{margin-top:0;}
+  .login{max-width:400px;margin:80px auto;background:#fff;padding:26px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);}
+  .login h2{text-align:center;margin-bottom:18px;}
+  .login .role{display:flex;gap:8px;margin-bottom:14px;}
+  .login .role button{flex:1;padding:10px;border:1px solid #B9C4D0;background:#E3E9EF;border-radius:6px;cursor:pointer;}
+  .login .role button.active{background:#5F7689;color:#fff;border-color:#5F7689;}
+  .err-box{background:#EFEAE8;color:#A3574E;padding:8px 10px;border-radius:6px;margin-bottom:10px;font-size:13px;}
+  .entry-del{color:#A3574E;cursor:pointer;}
+  .hidden{display:none;}
+  /* ===== 凭证样式（严格参照教材截图）===== */
+  .voucher{border:2px solid #88A0B8;background:#fff;max-width:920px;font-family:"SimSun","Microsoft YaHei",serif;margin:0 auto;}
+  .voucher .vh{display:none;}
+  .v-title{text-align:center;font-size:24px;font-weight:700;color:#3A4A58;letter-spacing:10px;padding:12px 0 6px;border-bottom:2px solid #88A0B8;}
+  /* 第二行：记字第X号（左上） | 日期（正中，落于「记 账 凭 证」正下方） | 附件X张（右上）
+     三等分栅格：第1列左对齐放「记字第X号」、第2列 auto 放日期（自然落正中）、第3列右对齐放附件 */
+  .vhead-v{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+           padding:8px 20px;border-bottom:2px solid #88A0B8;}
+  .vhead-v .v-left{grid-column:1;text-align:left;line-height:1.9;}
+  .vhead-v .v-date{grid-column:2;text-align:center;font-size:16px;letter-spacing:4px;color:#000;line-height:1.9;}
+  .vhead-v .v-right{grid-column:3;text-align:right;line-height:1.9;}
+  .vhead-v .v-no{font-size:15px;font-weight:700;color:#3A4A58;letter-spacing:2px;white-space:nowrap;}
+  .vhead-v .v-att{font-size:15px;font-weight:700;color:#3A4A58;letter-spacing:2px;white-space:nowrap;}
+  /* 表格主体 */
+  .vtab{width:100%;border-collapse:collapse;table-layout:fixed;}
+  .vtab th,.vtab td{border:1px solid #6E7E8C;padding:4px 6px;font-size:13px;vertical-align:middle;height:30px;}
+  .vtab th{background:#DCE4EC;text-align:center;font-weight:700;color:#3A4A58;}
+  .vtab td input{width:100%;border:none;background:transparent;padding:2px 4px;font-size:13px;font-family:inherit;box-sizing:border-box;}
+  /* 金额栏：右对齐、无分位格，普通数字格式 */
+  .vtab td.amt-cell{text-align:right;vertical-align:middle;padding:4px 6px!important;}
+  .vtab td.amt-cell input{text-align:right;font-family:Consolas,"Courier New",monospace;font-size:14px;height:28px;}
+  /* 报表金额栏 */
+  .vtab td.amt{text-align:right;padding:2px 3px!important;}
+  .vtab td.amt input{text-align:right;font-family:Consolas,"Courier New",monospace;font-size:13px;}
+  /* 报表表名（填写/预览界面显示；打印态由 stmtPrintHtml 输出，避免重复） */
+  .stmt-title{text-align:center;font-weight:700;font-size:18px;padding:10px 0 6px;letter-spacing:6px;}
+  /* 报表表头三要素：左右等宽、日期居中（落在表名正下方，不受左右内容长度影响） */
+  .stmt-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+             padding:6px 10px;border-bottom:1px solid #6E7E8C;font-size:13px;}
+  .stmt-head .sh-mid{text-align:center;white-space:nowrap;}
+  .stmt-head .sh-right{text-align:right;white-space:nowrap;}
+  .stmt-head input{border:none;border-bottom:1px solid #596472;background:transparent;font-family:inherit;font-size:13px;padding:1px 2px;}
+  /* 合计行 */
+  .v-total-row td{font-weight:700;text-align:center;padding:5px 8px;background:#DCE4EC;}
+  .v-total-row td.amt-cell{text-align:right;}
+  /* 签字栏 */
+  .vsigns-row{display:flex;gap:32px;padding:10px 20px;border-top:1px solid #88A0B8;font-size:14px;}
+  .vbalance{font-size:12px;color:#A3574E;padding:2px 16px 6px;min-height:16px;}
+  .v-wrap{position:relative;padding-bottom:6px;}
+  /* ===== 打印排版：A4 纵向一页两张凭证 =====
+     A4 高 297mm，去掉上下各 8mm 页边距后可印高度 281mm。
+     两张各取 139mm（合计 278mm），比可印高度少留 3mm 安全余量，
+     避免浏览器亚像素取整把第二张挤到下一页。每张在 139mm 内上下左右居中。 */
+  .vpage{height:139mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;box-sizing:border-box;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;}   /* 主轴改纵向：vshrink 用固定 194mm 宽，避开 flex 横向百分比基准把凭证撑出页框 */
+  .vpage.tear{border-bottom:1px dashed #88A0B8;}   /* 撕开虚线（只画在两张之间） */
+  .vpage.brk{page-break-after:always;break-after:page;}
+  .vshrink{width:100%;max-width:920px;min-width:0;margin:0 auto;}
+  /* 打印态再强制一次，防止被其它规则或打印窗口的缩放影响 */
+  @media print{
+    @page{size:A4 portrait;margin:8mm;}
+    /* 注意：这里【不能再加左右 padding】！@page{margin:8mm} 已经把 body 内容宽压到 194mm(733px)，
+       若 .vpage 再加 8mm padding，内容区只剩 673px，而 .vshrink 限宽 194mm(730px) 就会溢出，
+       凭证右边框被挤出可印区裁掉（"右边框没封口"的真凶）。页边距交给 @page 管即可。 */
+    .vpage{height:139mm!important;max-height:139mm!important;overflow:hidden!important;
+           page-break-inside:avoid!important;break-inside:avoid!important;
+           width:100%!important;max-width:100%!important;padding:0!important;}
+    .vpage.brk{page-break-after:always!important;break-after:page!important;}
+    .vpage.tear{border-bottom:1px dashed #88A0B8!important;}
+  }
+  @media print{
+    header,.sidebar,.no-print,.modal-bg{display:none!important;}
+    body{background:#fff!important;color:#000;font-size:11px;}
+    .layout{display:block;}
+    .content{padding:0;background:#fff;}
+    .card{border:none;box-shadow:none;margin:0;padding:0;}
+    .voucher{page-break-inside:avoid;border:1.5px solid #88A0B8;max-width:186mm!important;margin:0 auto!important;}   /* 凭证本身限宽(留安全余量)并居中，左右边框都落在页边距内(修正"右边框没封口") */
+    .vshrink{width:100%!important;max-width:100%!important;min-width:0!important;transform:none!important;}   /* 撑满 .vpage 内容区即可，绝不超出可印区 */
+    .stmt{border:1.5px solid #000;padding:6px;margin:0 auto 4mm!important;max-width:186mm!important;page-break-inside:avoid;page-break-after:always;}   /* 报表自身限宽(留安全余量)并居中，左右边框都落在页边距内(修正"右边框没封口") */
+    .stmt table{margin:0;}
+    .stmt th,.stmt td{font-size:11px;padding:2px 4px;}
+    .stmt .amt{text-align:right;}
+    .print-only{display:block;}
+    /* ===== 打印一律纯黑白（教师确认）：凭证/报表所有彩色统一转黑，灰底转白，保证打印、扫描、复印后清晰 ===== */
+    body{color:#000!important;}
+    .voucher,.stmt{border-color:#000!important;}
+    .v-title{color:#000!important;border-bottom-color:#000!important;}
+    .vhead-v{border-bottom-color:#000!important;}
+    .vhead-v .v-no,.vhead-v .v-att{color:#000!important;}
+    .vtab th,.vtab td{border-color:#000!important;}
+    .vtab th{background:#fff!important;color:#000!important;}
+    .v-total-row td{background:#f0f0f0!important;color:#000!important;}
+    .vsigns-row{border-top-color:#000!important;color:#000!important;}
+    .vpage.tear{border-bottom:1px dashed #666!important;}
+    .stmt-title{color:#000!important;}
+    .stmt-head{border-bottom-color:#000!important;color:#000!important;}
+    /* 打印版凭证右上角「记字第/附件」的下划线也转黑（该函数用的是内联样式） */
+    .v-no input,.v-att input{border-bottom:1px solid #000!important;color:#000!important;}
+  }
+  .print-only{display:none;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- 登录页 -->
+  <div id="loginView">
+    <div class="login">
+      <h2>财务会计实训平台</h2>
+      <div class="role">
+        <button id="roleTeacher" class="active" onclick="setRole('teacher')">老师</button>
+        <button id="roleStudent" onclick="setRole('student')">学生</button>
+      </div>
+      <div id="loginErr" class="err-box hidden"></div>
+      <div id="teacherForm">
+        <div class="row"><div><label>手机号</label><input id="tPhone" placeholder="老师手机号"></div></div>
+        <div class="row"><div><label>密码</label><input id="tPwd" type="password" placeholder="登录密码"></div></div>
+        <button class="btn" style="width:100%" onclick="teacherLogin()">老师登录</button>
+        <p class="muted" style="margin-top:10px">教师账号由服务器管理员初始化。</p>
+      </div>
+      <div id="studentForm" class="hidden">
+        <div class="row"><div><label>班级</label><input id="sCls" placeholder="如 会计2201班"></div></div>
+        <div class="row"><div><label>姓名</label><input id="sName" placeholder="学生姓名"></div></div>
+        <div class="row"><div><label>学号</label><input id="sId" placeholder="学号"></div></div>
+        <button class="btn" style="width:100%" onclick="studentLogin()">进入填写</button>
+        <p class="muted" style="margin-top:10px">填写内容提交后不可修改，请认真核对。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主应用 -->
+  <div id="mainView" class="hidden">
+    <header>
+      <h1>财务会计实训平台</h1>
+      <span class="who" id="who"></span>
+      <button class="no-print" onclick="printMine()" id="printBtn" style="display:none">🖨 打印/导出本人PDF</button>
+      <button onclick="logout()">退出</button>
+    </header>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="content" id="content"></main>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+
+<script>
+const AUTH = { token: null, role: null, name: null };
+function setRole(r){
+  document.getElementById('roleTeacher').classList.toggle('active', r==='teacher');
+  document.getElementById('roleStudent').classList.toggle('active', r==='student');
+  document.getElementById('teacherForm').classList.toggle('hidden', r!=='teacher');
+  document.getElementById('studentForm').classList.toggle('hidden', r!=='student');
+  AUTH._role = r;
+}
+function api(path, method, body){
+  const opt = { method: method||'GET', headers:{} };
+  if(AUTH.token) opt.headers['Authorization'] = 'Bearer ' + AUTH.token;
+  if(body){ opt.headers['Content-Type']='application/json'; opt.body = JSON.stringify(body); }
+  return fetch(path, opt).then(r=>r.json().then(j=>({code:r.status, data:j})));
+}
+function showErr(el, msg){ const e=document.getElementById(el); e.textContent=msg; e.classList.remove('hidden'); }
+function hideErr(el){ document.getElementById(el).classList.add('hidden'); }
+function openModal(html){ document.getElementById('modalBox').innerHTML=html; document.getElementById('modalBg').classList.add('show'); }
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toCapital(n){
+  n=Math.round((Number(n)||0)*100)/100; if(n===0)return '零元整';
+  var neg=n<0;n=Math.abs(n);
+  var intPart=Math.floor(n);var decPart=Math.round((n-intPart)*100);
+  var dCn='零壹贰叁肆伍陆柒捌玖';var uCn=['','拾','佰','仟'];var sCn=['','万','亿','兆'];
+  function intToCn(x){if(x===0)return '';var out='',section=0;while(x>0){var sec=x%10000,secStr='',zero=false;var arr=[];var t=sec;while(t>0){arr.unshift(t%10);t=Math.floor(t/10);}for(var i=0;i<arr.length;i++){var d=arr[i],pos=arr.length-1-i;if(d===0){zero=true;}else{if(zero&&secStr!=='')secStr+='零';secStr+=dCn[d]+uCn[pos];zero=false;}}if(secStr!=='')out=secStr+sCn[section]+out;else if(out!==''&&out.charAt(0)!=='零')out='零'+out;section++;x=Math.floor(x/10000);}return out;}
+  var cn='';if(intPart>0)cn+=intToCn(intPart)+'元';if(decPart===0){cn+='整';}else{var jiao=Math.floor(decPart/10),fen=decPart%10;if(intPart>0&&jiao===0&&fen>0)cn+='零';if(jiao>0)cn+=dCn[jiao]+'角';if(fen>0)cn+=dCn[fen]+'分';}return(neg?'负':'')+cn;
+}
+
+/* ---------- 登录 ---------- */
+async function teacherLogin(){
+  hideErr('loginErr');
+  const r = await api('/api/teacher/login','POST',{phone:document.getElementById('tPhone').value, password:document.getElementById('tPwd').value});
+  if(r.code!==200){
+    showErr('loginErr', r.data.error||'登录失败');
+    return;
+  }
+  AUTH.token=r.data.token; AUTH.role='teacher'; AUTH.name='老师';
+  enterMain();
+}
+async function studentLogin(){
+  hideErr('loginErr');
+  const r=await api('/api/student/login','POST',{cls:document.getElementById('sCls').value, name:document.getElementById('sName').value, stuid:document.getElementById('sId').value});
+  if(r.code!==200){ showErr('loginErr', r.data.error||'登录失败'); return; }
+  AUTH.token=r.data.token; AUTH.role='student'; AUTH.name=r.data.student.name;
+  enterMain();
+}
+function logout(){ AUTH.token=null; AUTH.role=null; document.getElementById('loginView').classList.remove('hidden'); document.getElementById('mainView').classList.add('hidden'); }
+
+function enterMain(){
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('mainView').classList.remove('hidden');
+  document.getElementById('who').textContent = AUTH.role==='teacher' ? '老师（'+AUTH.name+'）' : ('学生：'+AUTH.name);
+  document.getElementById('printBtn').style.display = AUTH.role==='student' ? 'inline-block' : 'none';
+  if(AUTH.role==='teacher'){ TAB='biz'; renderTeacher(); } else { renderStudent(); }
+}
+
+/* ================= 老师端 ================= */
+let TAB='biz'; let GRADE_ALL=[]; let CUR_CLS='';
+const TMENU=[['biz','标准答案库'],['stmt','报表管理'],['grade','批改与发布'],['score','学生成绩'],['sys','系统维护']];
+/* 模块顺序与名称、权重（须与 server.js 的 MODULE_WEIGHTS 一致） */
+const MOD_NAMES=['存货','固定资产','交易性金融资产','负债','所有者权益','销售','费用','财务报表'];
+const MOD_W=[0.15,0.10,0.10,0.10,0.05,0.10,0.10,0.20];
+function renderTeacher(){
+  let sb = '<div class="ttl">老师菜单</div>';
+  TMENU.forEach(t=>{ sb += '<div class="item '+(TAB===t[0]?'active':'')+'" onclick="switchT(\''+t[0]+'\')">'+t[1]+'</div>'; });
+  document.getElementById('sidebar').innerHTML = sb;
+  renderTeacherBody();
+}
+function switchT(t){ TAB=t; renderTeacher(); }
+async function renderTeacherBody(){
+  if(TAB==='biz') return renderBiz();
+  if(TAB==='stmt') return renderStmt();
+  if(TAB==='grade') return renderGrade();
+  if(TAB==='score') return renderScore();
+  if(TAB==='sys') return renderSys();
+}
+
+/* 标准答案库（对应各模块的“标准凭证”，用于自动批改；学生端看不到） */
+async function renderBiz(){
+  const r = await api('/api/teacher/state');
+  if(r.code!==200){ document.getElementById('content').innerHTML='<p class="err">加载失败</p>'; return; }
+  const {modules, businesses, statements} = r.data;
+  let html = '<div class="card"><h2>标准答案库（用于自动批改）</h2>';
+  html += '<p class="muted">说明：学生端不会出现“选业务”的列表，学生点击模块后直接得到空白凭证自行填制。老师在此按模块填写<b>标准凭证</b>，系统按模块内顺序逐张比对批改（第1张对第1张标准、第2张对第2张……）。学生填的凭证数量应与本模块标准凭证数量一致。</p>';
+  modules.forEach(m=>{
+    if(m.order === 8){
+      // 模块8 = 财务报表：标准答案在两张报表中逐格填写，与学生端模块8完全对应
+      const stmts = (statements||[]).filter(s=>s.moduleId===m.id);
+      html += '<div class="card" style="background:#DCE4EC"><h2>模块8：'+esc(m.name)+'</h2>';
+      html += '<p class="muted">本模块为财务报表，标准答案需在下方两张报表中逐格填写，与学生端模块8的填写内容一一对应。系统按报表逐格比对批改；<b>老师未填答案的格子不参与批改、不扣分</b>。</p>';
+      if(stmts.length===0){
+        html += '<p class="muted">尚未生成报表模板，请到左侧「报表管理」点击「恢复标准报表模板」。</p>';
+      }
+      stmts.forEach(s=>{
+        const filled = stmtFilledCount(s);
+        html += '<div class="card" style="background:#fff"><h3>'+esc(s.title)+'</h3>';
+        html += '<p class="muted">标准答案已填 '+filled+' 项。</p>';
+        html += '<button class="g" onclick="editStmtRows(\''+s.id+'\',\''+s.type+'\')">编辑行项目</button> ';
+        html += '<button class="y" onclick="editStmtAnswer(\''+s.id+'\')">填写标准答案</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+      return;
+    }
+    const bs = businesses.filter(b=>b.moduleId===m.id);
+    html += '<div class="card" style="background:#DCE4EC"><h2>模块'+m.order+'：'+esc(m.name)+'</h2>';
+    html += '<button class="y" onclick="newBiz(\''+m.id+'\')">＋ 新增标准凭证</button>';
+    html += '<table><thead><tr><th>序号</th><th>分录行数</th><th>操作</th></tr></thead><tbody>';
+    bs.forEach((b,i)=>{
+      html += '<tr><td>凭证'+(i+1)+'</td><td>'+(b.expected&&b.expected.entries?b.expected.entries.length:0)+'</td>'+
+        '<td><button class="g" onclick="editBiz(\''+b.id+'\')">编辑答案</button> <button class="r" onclick="delBiz(\''+b.id+'\')">删除</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+/* 统计某张报表已填的标准答案项数，便于教师确认模块8是否填全 */
+function stmtFilledCount(s){
+  let n=0;
+  (s.head||[]).forEach(r=>{ if(r.answer!=null && String(r.answer).trim()!=='') n++; });
+  if(s.type==='balance'){
+    (s.left||[]).forEach(r=>{ if(r.answer!=null&&String(r.answer).trim()!=='')n++; if(r.answerPrev!=null&&String(r.answerPrev).trim()!=='')n++; });
+    (s.right||[]).forEach(r=>{ if(r.answer!=null&&String(r.answer).trim()!=='')n++; if(r.answerPrev!=null&&String(r.answerPrev).trim()!=='')n++; });
+  } else {
+    (s.rows||[]).forEach(r=>{ if(r.answer!=null&&String(r.answer).trim()!=='')n++; });
+  }
+  return n;
+}
+function splitAcc(acc){ const a=String(acc||'').split('—'); if(a.length>1) return {main:a[0], detail:a.slice(1).join('—')}; const b=String(acc||'').split('-'); if(b.length>1) return {main:b[0], detail:b.slice(1).join('-')}; return {main:acc||'', detail:''}; }
+function entryRowsHtml(entries){
+  entries = entries||[];
+  let h = '<table class="vtab"><thead><tr><th>摘要</th><th>总账科目</th><th>明细科目</th><th>方向</th><th>金额</th><th></th></tr></thead><tbody>';
+  entries.forEach((e,i)=>{
+    const sp = splitAcc(e.account);
+    h += '<tr>'+
+      '<td><input data-e="summary" data-i="'+i+'" value="'+esc(e.summary||'')+'"></td>'+
+      '<td><input data-e="accountMain" data-i="'+i+'" value="'+esc(sp.main)+'" placeholder="如 原材料"></td>'+
+      '<td><input data-e="accountDetail" data-i="'+i+'" value="'+esc(sp.detail)+'" placeholder="如 A材料"></td>'+
+      '<td><select data-e="direction" data-i="'+i+'">'+(e.direction==='贷'?'<option>借</option><option selected>贷</option>':'<option selected>借</option><option>贷</option>')+'</select></td>'+
+      '<td class="amt"><input data-e="amount" data-i="'+i+'" value="'+(e.amount||'')+'" inputmode="decimal"></td>'+
+      '<td><span class="entry-del" onclick="delEntry('+i+')">删除</span></td></tr>';
+  });
+  h += '</tbody></table><button class="y" onclick="addEntry()">＋ 添加分录行</button>';
+  return h;
+}
+let BIZ_DRAFT = null;
+function newBiz(moduleId){
+  BIZ_DRAFT = {id:null, moduleId, title:'', expected:{date:'', number:'', attachments:'', entries:[{summary:'',account:'',direction:'借',amount:''}]}};
+  editBizModal();
+}
+function editBizModal(){
+  const b=BIZ_DRAFT;
+  openModal('<h3>'+(b.id?'编辑标准答案':'新增标准凭证')+'</h3>'+
+    '<p class="muted">这是该模块第 '+(b.id?'':'新')+' 张标准凭证，系统将按其在模块内的顺序与学生的第 N 张凭证比对。</p>'+
+    '<div class="row"><div style="flex:2"><label>凭证标签（选填）</label><input id="bizTitle" value="'+esc(b.title||'')+'" placeholder="如 购入原材料"></div>'+
+    '<div><label>日期</label><input id="bizDate" value="'+esc(b.expected.date||'')+'"></div>'+
+    '<div><label>凭证编号</label><input id="bizNo" value="'+esc(b.expected.number||'')+'"></div>'+
+    '<div><label>附件张数</label><input id="bizAtt" value="'+esc(b.expected.attachments||'')+'" inputmode="decimal"></div></div>'+
+    '<p class="muted">标准分录（学生填制后系统按此批改；科目分两栏填写）：</p>'+
+    '<div id="bizEntries">'+entryRowsHtml(b.expected.entries)+'</div>'+
+    '<div style="margin-top:12px"><button class="btn" onclick="saveBiz()">保存</button> <button class="r" onclick="closeModal()">取消</button></div>');
+  bindEntryInputs();
+}
+async function editBiz(id){
+  const r = await api('/api/teacher/state');
+  const b = r.data.businesses.find(x=>x.id===id);
+  BIZ_DRAFT = JSON.parse(JSON.stringify(b));
+  if(!BIZ_DRAFT.expected) BIZ_DRAFT.expected={date:'',number:'',attachments:'',entries:[]};
+  editBizModal();
+}
+function addEntry(){ BIZ_DRAFT.expected.entries.push({summary:'',account:'',direction:'借',amount:''}); document.getElementById('bizEntries').innerHTML=entryRowsHtml(BIZ_DRAFT.expected.entries); bindEntryInputs(); }
+function delEntry(i){ BIZ_DRAFT.expected.entries.splice(i,1); document.getElementById('bizEntries').innerHTML=entryRowsHtml(BIZ_DRAFT.expected.entries); bindEntryInputs(); }
+function bindEntryInputs(){
+  document.querySelectorAll('#bizEntries [data-e]').forEach(el=>{
+    const handler=()=>{
+      const i=+el.getAttribute('data-i'); const k=el.getAttribute('data-e'); const ent=BIZ_DRAFT.expected.entries[i];
+      if(k==='accountMain'){ ent.accountMain=el.value; ent.account=(ent.accountMain||'')+(ent.accountDetail? '—'+ent.accountDetail:''); }
+      else if(k==='accountDetail'){ ent.accountDetail=el.value; ent.account=(ent.accountMain||'')+(ent.accountDetail? '—'+ent.accountDetail:''); }
+      else if(k==='direction'){ ent.direction=el.value; }
+      else { ent[k]=el.value; }
+    };
+    el.addEventListener('input',handler);
+    el.addEventListener('change',handler);
+  });
+}
+async function saveBiz(){
+  BIZ_DRAFT.title=document.getElementById('bizTitle').value;
+  BIZ_DRAFT.expected.date=document.getElementById('bizDate').value;
+  BIZ_DRAFT.expected.number=document.getElementById('bizNo').value;
+  BIZ_DRAFT.expected.attachments=document.getElementById('bizAtt').value;
+  const r=await api('/api/teacher/business','POST',BIZ_DRAFT);
+  if(r.code===200){ closeModal(); renderBiz(); } else alert(r.data.error||'保存失败');
+}
+async function delBiz(id){
+  if(!confirm('确定删除该标准凭证？')) return;
+  const r=await api('/api/teacher/business','DELETE',{id});
+  if(r.code===200) renderBiz();
+}
+
+/* 报表管理 */
+async function renderStmt(){
+  const r=await api('/api/teacher/state');
+  const stmts=r.data.statements;
+  let html='<div class="card"><h2>财务报表模板与标准答案</h2><p class="muted">先编辑行项目（标签），再填写标准答案数值。学生按模板填数，系统逐格比对；老师<b>未填答案的格子不参与批改、不扣分</b>。</p>';
+  stmts.forEach(s=>{
+    html+='<div class="card" style="background:#DCE4EC"><h2>'+s.title+'</h2>';
+    html+='<button class="g" onclick="editStmtRows(\''+s.id+'\',\''+s.type+'\')">编辑行项目</button> ';
+    html+='<button class="y" onclick="editStmtAnswer(\''+s.id+'\')">填写标准答案</button>';
+    if(s.type==='balance'){ html+=balancePreviewHtml(s); }
+    else {
+      html+='<table><thead><tr><th>行项目</th><th>标准答案</th></tr></thead><tbody>';
+      s.rows.forEach(row=>{ html+='<tr><td>'+esc(row.label)+'</td><td>'+(row.answer==null?'<span class="muted">未填</span>':esc(row.answer))+'</td></tr>'; });
+      html+='</tbody></table>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+/* ===== 资产负债表通用渲染（教师预览 / 教师填答案 / 学生填写 共用） ===== */
+/* 排版规则：资产栏从第一排开始罗列，空行放在"资产总计"之前，
+   使"资产总计"与"负债和所有者权益总计"落在同一排（最底下一排）。 */
+function balanceGrid(L,R){
+  const total=Math.max(L.length,R.length);
+  const hasTotal = L.length>0 && /总计/.test(L[L.length-1].label||'');
+  const body = hasTotal ? L.slice(0,-1) : L.slice();
+  const last = hasTotal ? L[L.length-1] : null;
+  const pad  = Math.max(0, total - L.length);
+  const rows=[];
+  body.forEach(function(x){ rows.push({l:x,r:null}); });
+  for(let i=0;i<pad;i++) rows.push({l:null,r:null});
+  if(last) rows.push({l:last,r:null});
+  for(let i=0;i<R.length;i++){ if(!rows[i]) rows.push({l:null,r:null}); rows[i].r=R[i]; }
+  return rows;
+}
+const BAL_TOTAL_RE=/^(资产总计|负债和所有者权益总计|流动资产合计|非流动资产合计|流动负债合计|非流动负债合计|负债合计|所有者权益合计)/;
+/* 表头三要素：编制单位（左）/ 日期（中）/ 单位（右），均参与计分
+   pre = 'bh'（资产负债表）/ 'ih'（利润表） */
+function stmtHeadHtml(s,cells,mode,pre){
+  pre=pre||'bh';
+  const H=s.head||[]; const find=function(id){ return H.find(function(x){return x.id===id;})||{}; };
+  function item(id,label,ph,w){
+    const r=find(id);
+    const val=(mode==='ans'||mode==='view')?(r.answer==null?'':r.answer):(cells[id]==null?'':cells[id]);
+    const dis=(mode==='view')?' disabled':'';
+    // 学生填写模式不显示示例提示（如：××有限公司 / 2025-12-31 / 元），教师填答案与只读预览保留
+    const phShow=(mode==='stu')?'':ph;
+    return '<span style="white-space:nowrap">'+label+'：<input data-r="'+id+'" value="'+esc(val)+'" placeholder="'+phShow+'"'+dis+' style="width:'+w+'px"></span>';
+  }
+  // 三等分栅格：左右两栏等宽，日期那一栏自然落在纸张正中（表名正下方）
+  return '<div class="stmt-head">'
+    +'<div class="sh-left">'+item(pre+'_org','编制单位','如：××有限公司',190)+'</div>'
+    +'<div class="sh-mid">'+item(pre+'_date','日期','如：2025-12-31',150)+'</div>'
+    +'<div class="sh-right">'+item(pre+'_unit','单位','元',60)+'</div>'
+    +'</div>';
+}
+/* 打印用表头三要素（纯文本，不带 input） */
+function stmtHeadPrintHtml(s,cells,pre){
+  pre=pre||'bh';
+  const cells2=cells||{};
+  const g=function(id){ return esc(cells2[id]==null?'':cells2[id]); };
+  // 打印态同样三等分，日期居中在表名正下方
+  return '<div class="stmt-head">'
+    +'<div class="sh-left">编制单位：'+g(pre+'_org')+'</div>'
+    +'<div class="sh-mid">'+g(pre+'_date')+'</div>'
+    +'<div class="sh-right">单位：'+g(pre+'_unit')+'</div>'
+    +'</div>';
+}
+function balHeadHtml(s,cells,mode){ return stmtHeadHtml(s,cells,mode,'bh'); }
+/* mode: 'ans'=教师填标准答案(可编辑,取answer) | 'stu'=学生填写(可编辑,取cells) | 'view'=只读预览(取answer) */
+function balCellHtml(r,cells,mode){
+  if(!r) return '<td></td><td class="amt"></td><td class="amt"></td>';
+  const A=(mode==='ans'||mode==='view');
+  const vc=A?(r.answer==null?'':r.answer):(cells[r.id]==null?'':cells[r.id]);
+  const vp=A?(r.answerPrev==null?'':r.answerPrev):(cells[r.id+'#p']==null?'':cells[r.id+'#p']);
+  const dis=(mode==='view')?' disabled':'';
+  // 学生填写模式(mode='stu')不显示任何提示文字，避免变相给答案；教师填答案/只读预览保留提示
+  const stu=(mode==='stu');
+  const mk=function(id,v,ph){ return '<input data-r="'+id+'" value="'+esc(v)+'" placeholder="'+(stu?'':ph)+'" inputmode="decimal"'+dis+'>'; };
+  const lbl=BAL_TOTAL_RE.test(r.label)?('<b>'+esc(r.label)+'</b>'):esc(r.label);
+  return '<td>'+lbl+'</td><td class="amt">'+mk(r.id+'#p',vp,'上年年末')+'</td><td class="amt">'+mk(r.id,vc,'期末')+'</td>';
+}
+function balTableHtml(s,cells,mode){
+  const grid=balanceGrid(s.left||[],s.right||[]);
+  let h='<table class="vtab"><thead><tr>'
+    +'<th style="width:26%">资产</th><th style="width:12%">上年年末余额</th><th style="width:12%">期末余额</th>'
+    +'<th style="width:26%">负债和所有者权益</th><th style="width:12%">上年年末余额</th><th style="width:12%">期末余额</th>'
+    +'</tr></thead><tbody>';
+  grid.forEach(function(p){ h+='<tr>'+balCellHtml(p.l,cells,mode)+balCellHtml(p.r,cells,mode)+'</tr>'; });
+  h+='</tbody></table>';
+  // 表名：打印态由 stmtPrintHtml 统一输出一份，这里只在填写/预览界面加，避免打印时重复
+  const title=(mode==='print')?'':'<div class="stmt-title">'+esc(s.title||'')+'</div>';
+  return title+balHeadHtml(s,cells,mode)+h;
+}
+function balancePreviewHtml(s){
+  return '<div style="margin-top:8px">'+balTableHtml(s,{},'view')+'</div>';
+}
+/* 利润表：mode='ans'(教师填答案) | 'stu'(学生填) | 'view'(只读) | 'print'(打印纯文本) */
+function incTableHtml(s,cells,mode){
+  cells=cells||{};
+  const A=(mode==='ans'||mode==='view'||mode==='print');
+  let body='';
+  (s.rows||[]).forEach(function(r){
+    const v=A?(r.answer==null?'':r.answer):(cells[r.id]==null?'':cells[r.id]);
+    const bold=/^[一二三四五六七八九十]+、/.test(r.label)?' style="font-weight:700"':'';
+    if(mode==='print'){
+      body+='<tr><td'+bold+'>'+esc(r.label)+'</td><td class="amt">'+esc(v)+'</td></tr>';
+    } else {
+      const dis=(mode==='view')?' disabled':'';
+      body+='<tr><td'+bold+'>'+esc(r.label)+'</td>'
+        +'<td class="amt"><input data-r="'+r.id+'" value="'+esc(v)+'" inputmode="decimal"'+dis+' style="text-align:right"></td></tr>';
+    }
+  });
+  const tb=mode==='print'?'tbody':'tbody';
+  let h='<table class="vtab"><thead><tr><th style="width:60%">项　　目</th><th style="width:40%">本期金额</th></tr></thead><'+tb+'>'+body+'</'+tb+'></table>';
+  // 表名：打印态由 stmtPrintHtml 统一输出一份，这里只在填写/预览界面加，避免打印时重复
+  const title=(mode==='print')?'':'<div class="stmt-title">'+esc(s.title||'')+'</div>';
+  if(mode==='print') return stmtHeadPrintHtml(s,cells,'ih')+h;
+  return title+stmtHeadHtml(s,cells,mode,'ih')+h;
+}
+function editStmtRows(id,type){
+  if(type==='balance'){
+    openModal('<h3>编辑资产负债表行项目</h3>'+
+      '<p class="muted">左栏＝资产（每行一个，回车换行）：</p><textarea id="rowsLeft" rows="10"></textarea>'+
+      '<p class="muted" style="margin-top:8px">右栏＝负债和所有者权益（每行一个，回车换行）：</p><textarea id="rowsRight" rows="10"></textarea>'+
+      '<div style="margin-top:10px"><button class="btn" onclick="saveStmtRows(\''+id+'\',\'balance\')">保存</button> <button class="r" onclick="closeModal()">取消</button></div>');
+    api('/api/teacher/state').then(r=>{ const s=r.data.statements.find(x=>x.id===id); document.getElementById('rowsLeft').value=(s.left||[]).map(x=>x.label).join('\n'); document.getElementById('rowsRight').value=(s.right||[]).map(x=>x.label).join('\n'); });
+  } else {
+    openModal('<h3>编辑利润表行项目</h3><p class="muted">每行一个项目标签，回车换行分隔：</p>'+
+      '<textarea id="rowsTxt" rows="14"></textarea>'+
+      '<div style="margin-top:10px"><button class="btn" onclick="saveStmtRows(\''+id+'\',\'income\')">保存</button> <button class="r" onclick="closeModal()">取消</button></div>');
+    api('/api/teacher/state').then(r=>{ const s=r.data.statements.find(x=>x.id===id); document.getElementById('rowsTxt').value=s.rows.map(x=>x.label).join('\n'); });
+  }
+}
+async function saveStmtRows(id,type){
+  let body={id};
+  if(type==='balance'){
+    body.left=document.getElementById('rowsLeft').value.split('\n').map(x=>x.trim()).filter(Boolean);
+    body.right=document.getElementById('rowsRight').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  } else {
+    body.rows=document.getElementById('rowsTxt').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  }
+  const r=await api('/api/teacher/statement/rows','POST',body);
+  if(r.code===200){ closeModal(); renderStmt(); } else alert('失败');
+}
+function editStmtAnswer(id){
+  api('/api/teacher/state').then(r=>{
+    const s=r.data.statements.find(x=>x.id===id);
+    let h='<h3>'+s.title+' 标准答案</h3>';
+    if(s.type==='balance'){
+      h+='<p class="muted">表头三要素（编制单位/日期/单位）与下面所有数字都会参与计分。<b>留空的格子不参与批改、不扣分。</b></p>';
+      h+='<div id="stmtCells">'+balTableHtml(s,{},'ans')+'</div>';
+    } else {
+      h+='<p class="muted">表头三要素（编制单位/日期/单位）与下面所有数字都会参与计分。<b>留空的格子不参与批改、不扣分。</b></p>';
+      h+='<div id="stmtCells">'+incTableHtml(s,{},'ans')+'</div>';
+    }
+    h+='<div style="margin-top:10px"><button class="btn" onclick="saveStmtAnswer(\''+id+'\')">保存答案</button> <button class="r" onclick="closeModal()">取消</button></div>';
+    openModal(h);
+  });
+}
+async function saveStmtAnswer(id){
+  const cells={};
+  document.querySelectorAll('#stmtCells [data-r], #stmtCellsL [data-r], #stmtCellsR [data-r]').forEach(el=>{ cells[el.getAttribute('data-r')]=el.value; });
+  const r=await api('/api/teacher/statement/answer','POST',{id, cells});
+  if(r.code===200){ closeModal(); renderStmt(); } else alert('失败');
+}
+
+/* 批改与发布（按班级分块） */
+async function renderGrade(){
+  const r=await api('/api/teacher/students'); GRADE_ALL=r.data.students; CUR_CLS=''; paintGradeTable();
+}
+/* 分模块提交状态小条（教师端「批改与发布」「学生成绩」两张表共用） */
+function modStripHtml(stu){
+  const ms = stu.modSubmitted || [];
+  const total = MOD_NAMES.length;
+  let done = 0;
+  let s = '<div class="mstrip">';
+  for (let i = 0; i < total; i++) {
+    const ok = !!ms[i]; if (ok) done++;
+    s += '<span class="ms ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓' : '✗') + '</span>';
+  }
+  s += '</div><div class="muted" style="margin-top:2px">' + done + '/' + total + ' 已提交</div>';
+  return s;
+}
+function paintGradeTable(){
+  const list=GRADE_ALL.filter(s=>!CUR_CLS||s.cls===CUR_CLS);
+  const classes=[...new Set(GRADE_ALL.map(s=>s.cls))];
+  let html='<div class="card"><h2>批改与发布</h2>';
+  html+='<div class="row"><div style="flex:0 0 260px"><label>按班级筛选</label><select onchange="CUR_CLS=this.value;paintGradeTable()"><option value="">全部班级</option>'+classes.map(c=>'<option value="'+esc(c)+'" '+(c===CUR_CLS?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>';
+  html+='<div style="flex:1;align-self:flex-end">';
+  html+='<button class="btn" onclick="gradeAll()">批改'+(CUR_CLS?'本班':'全部')+'</button> ';
+  html+='<button class="g" onclick="publishAll()">发布'+(CUR_CLS?'本班':'全部')+'</button> ';
+  html+='<button class="y" onclick="unpublishAll()">取消发布'+(CUR_CLS?'本班':'全部')+'</button></div></div>';
+  html+='<p class="muted">当前：'+(CUR_CLS||'全部班级')+'，共 '+list.length+' 人（已按学号从小到大排列）</p>';
+  html+='<div style="overflow-x:auto"><table style="margin-top:8px"><thead><tr><th>班级</th><th>姓名</th><th>学号</th><th>提交情况<br>（模块1–8）</th><th>已发布</th>';
+  MOD_NAMES.forEach((n,i)=>{ html+='<th>模块'+(i+1)+'<br>'+n+'<br>('+(MOD_W[i]*100)+'%)</th>'; });
+  html+='<th>系统加权<br>满分90</th><th>操作</th></tr></thead><tbody>';
+  list.forEach(s=>{
+    html+='<tr><td>'+esc(s.cls)+'</td><td>'+esc(s.name)+'</td><td>'+esc(s.stuid)+'</td><td>'+modStripHtml(s)+'</td>'+
+      '<td>'+(s.published?'<span class="pill">已发布</span>':'<span class="pill no">未发布</span>')+'</td>';
+    (s.moduleScores||[]).forEach(v=>{ html+='<td>'+(v!==''&&v!=null?v:'—')+'</td>'; });
+    html+='<td><b>'+(s.weighted!=null?s.weighted:'—')+'</b></td>'+
+      '<td><button class="g" onclick="gradeOne(\''+s.sid+'\')">批改</button> <button class="y" onclick="publishOne(\''+s.sid+'\')">发布</button> <button class="btn" onclick="viewDetail(\''+s.sid+'\')">查看</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('content').innerHTML=html;
+}
+async function gradeAll(){ const list=GRADE_ALL.filter(s=>!CUR_CLS||s.cls===CUR_CLS); for(const s of list){ await api('/api/teacher/grade','POST',{studentId:s.sid}); } alert('批改完成（'+(CUR_CLS||'全部')+'，'+list.length+'人）'); paintGradeTable(); }
+async function gradeOne(sid){ const r=await api('/api/teacher/grade','POST',{studentId:sid}); if(r.code===200){ alert('批改完成'); paintGradeTable(); } }
+async function publishAll(){ if(!confirm('发布后学生将看到成绩与错处，确定？'))return; const list=GRADE_ALL.filter(s=>!CUR_CLS||s.cls===CUR_CLS); for(const s of list){ await api('/api/teacher/publish','POST',{studentId:s.sid}); } paintGradeTable(); }
+async function unpublishAll(){ const list=GRADE_ALL.filter(s=>!CUR_CLS||s.cls===CUR_CLS); for(const s of list){ await api('/api/teacher/unpublish','POST',{studentId:s.sid}); } paintGradeTable(); }
+async function publishOne(sid){ const r=await api('/api/teacher/publish','POST',{studentId:sid}); if(r.code===200) paintGradeTable(); }
+async function viewDetail(sid){
+  const r=await api('/api/teacher/student?sid='+encodeURIComponent(sid));
+  const stu=r.data.student; const g=stu.grades;
+  let h='<h3>'+esc(stu.cls)+' '+esc(stu.name)+'（'+esc(stu.stuid)+'）成绩明细</h3>';
+  h+='<div style="margin:6px 0"><button class="y" onclick="gradeOne(\''+sid+'\')">批改全部模块</button></div>';
+  if(!g){ h+='<p class="muted">尚未批改</p>'; } else {
+    h+='<p>系统加权总分（满分 90）：<b>'+g.weighted+'</b> 分</p>';
+    h+='<table style="margin-top:6px"><thead><tr><th>模块</th><th>综合分(满分100)</th><th>权重</th><th>折算得分</th><th>操作</th></tr></thead><tbody>';
+    MOD_NAMES.forEach((n,i)=>{
+      const ms=(g.moduleScores&&g.moduleScores[i]!=null)?g.moduleScores[i]:null;
+      const w=MOD_W[i]||0;
+      const mid='M'+(i+1);
+      h+='<tr><td>模块'+(i+1)+' '+esc(n)+'</td><td>'+(ms!=null?ms:'—')+'</td><td>'+(w*100)+'%</td><td>'+(ms!=null?Math.round(ms*w*10)/10:'—')+'</td><td><button class="btn" onclick="gradeModule(\''+sid+'\',\''+mid+'\')">批改</button></td></tr>';
+    });
+    h+='</tbody></table>';
+    h+='<p class="muted">说明：实验报告总评 = 以上系统加权总分(满分90) + 手写实验心得(满分10，由教师线下批改，不进系统)。每个模块可单独点击"批改"。</p>';
+    const errText=buildErrText(g);
+    h+='<h4 style="margin:14px 0 6px">错处明细（按凭证编号）</h4>';
+    h+='<div style="margin-bottom:6px"><button class="btn" onclick="copyErrText()">复制全部错处文字</button></div>';
+    h+='<pre id="errText" style="white-space:pre-wrap;word-break:break-all;background:#DCE4EC;border:1px solid #C9D3DD;border-radius:6px;padding:10px;font-family:Consolas,Microsoft YaHei,monospace;font-size:13px;line-height:1.7;max-height:320px;overflow:auto">'+esc(errText||'（暂无批改进记录）')+'</pre>';
+  }
+  openModal(h+'<div style="margin-top:10px"><button class="r" onclick="closeModal()">关闭</button></div>');
+}
+// 按模块分组、以"凭证编号"为主键，把错处拼成纯文字
+function buildErrText(g){
+  const out=[];
+  MOD_NAMES.forEach((mn,i)=>{
+    const mid='M'+(i+1);
+    const keys=Object.keys(g.details||{}).filter(k=>{
+      if(i===7) return k.indexOf('S_')===0;              // 模块8 = 报表
+      return k.indexOf('V_'+mid+'_')===0;
+    }).sort((a,b)=>{
+      const na=parseInt(a.split('_').pop(),10), nb=parseInt(b.split('_').pop(),10);
+      return (isNaN(na)?0:na)-(isNaN(nb)?0:nb);
+    });
+    if(!keys.length) return;
+    const ms=(g.moduleScores&&g.moduleScores[i]!=null)?g.moduleScores[i]:'未批改';
+    out.push('【模块'+(i+1)+' '+mn+'】模块综合分：'+ms);
+    keys.forEach(k=>{
+      const d=g.details[k];
+      let label;
+      if(i===7){ label=d.title; }
+      else if(d.vnum){ label='凭证编号 '+d.vnum; }
+      else{ const m=(d.title||'').match(/凭证[编号\s]*(\S+)/); label=m?'凭证编号 '+m[1]:'第'+(k.split('_').pop()||'?')+'张'; }
+      if(d.errors&&d.errors.length) d.errors.forEach(e=>{ out.push('  · '+label+'：'+e); });
+      else out.push('  · '+label+'：无误');
+    });
+    out.push('');
+  });
+  return out.join('\n');
+}
+function copyErrText(){
+  const el=document.getElementById('errText'); if(!el) return;
+  const ta=document.createElement('textarea');
+  ta.value=el.textContent; ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); alert('错处文字已复制，可直接粘贴到评语或文档里。'); }
+  catch(e){ alert('复制失败，请手动选中文字后按 Ctrl+C。'); }
+  document.body.removeChild(ta);
+}
+async function gradeModule(sid, mid){
+  const r=await api('/api/teacher/grade','POST',{studentId:sid, moduleId:mid});
+  if(r.code===200){ alert('模块'+mid.replace('M','')+' 批改完成'); viewDetail(sid); } else alert(r.data.error||'批改失败');
+}
+
+/* 学生成绩（按班级分块 + 导出） */
+async function renderScore(){
+  const r=await api('/api/teacher/students'); GRADE_ALL=r.data.students; CUR_CLS=''; paintScoreTable();
+}
+function paintScoreTable(){
+  const list=GRADE_ALL.filter(s=>!CUR_CLS||s.cls===CUR_CLS);
+  const classes=[...new Set(GRADE_ALL.map(s=>s.cls))];
+  let html='<div class="card"><h2>学生成绩</h2>';
+  /* —— 各班级汇总（分班统计 + 分班批改/发布/导出）—— */
+  html+='<h3 style="margin:4px 0 6px">各班级汇总（共 '+classes.length+' 个班，'+GRADE_ALL.length+' 人）</h3>';
+  html+='<div style="overflow-x:auto"><table style="margin-bottom:14px"><thead><tr><th>班级</th><th>人数</th><th>已批改</th><th>已发布</th><th>平均系统加权分<br>（满分90）</th><th>操作</th></tr></thead><tbody>';
+  classes.forEach(function(c){
+    const arr=GRADE_ALL.filter(s=>s.cls===c);
+    const graded=arr.filter(s=>s.weighted!=null).length;
+    const pub=arr.filter(s=>s.published).length;
+    const vals=arr.filter(s=>typeof s.weighted==='number').map(s=>s.weighted);
+    const avg=vals.length?(Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length*10)/10):'—';
+    html+='<tr><td><b>'+esc(c)+'</b></td><td>'+arr.length+'</td><td>'+graded+'</td><td>'+pub+'</td><td><b>'+avg+'</b></td>';
+    html+='<td><button class="btn" onclick="clsGrade(\''+esc(c)+'\')">批改本班</button> ';
+    html+='<button class="g" onclick="clsPublish(\''+esc(c)+'\')">发布本班</button> ';
+    html+='<button class="y" onclick="exportXlsxCls(\''+esc(c)+'\')">导出本班Excel</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  if(!classes.length) html+='<p class="muted">暂无学生数据。学生用「班级+姓名+学号」登录后自动出现在这里，多个班级可分批（今天1班、明天2班……）累计操作，数据不会互相覆盖。</p>';
+  /* —— 明细筛选 —— */
+  html+='<h3 style="margin:4px 0 6px">成绩明细</h3>';
+  html+='<div class="row"><div style="flex:0 0 260px"><label>按班级筛选</label><select onchange="CUR_CLS=this.value;paintScoreTable()"><option value="">全部班级</option>'+classes.map(c=>'<option value="'+esc(c)+'" '+(c===CUR_CLS?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>';
+  html+='<div style="flex:1;align-self:flex-end"><button class="btn" onclick="exportXlsx()">导出成绩Excel'+(CUR_CLS?'（本班）':'（全部）')+'</button></div></div>';
+  html+='<p class="muted">当前：'+(CUR_CLS||'全部班级')+'，共 '+list.length+' 人（已按学号从小到大排列）</p>';
+  html+='<div style="overflow-x:auto"><table style="margin-top:8px"><thead><tr><th>班级</th><th>姓名</th><th>学号</th><th>提交情况<br>（模块1–8）</th><th>已发布</th>';
+  MOD_NAMES.forEach((n,i)=>{ html+='<th>模块'+(i+1)+'<br>'+n+'<br>('+(MOD_W[i]*100)+'%)</th>'; });
+  html+='<th>系统加权<br>满分90</th></tr></thead><tbody>';
+  list.forEach(s=>{
+    html+='<tr><td>'+esc(s.cls)+'</td><td>'+esc(s.name)+'</td><td>'+esc(s.stuid)+'</td><td>'+modStripHtml(s)+'</td><td>'+(s.published?'是':'否')+'</td>';
+    (s.moduleScores||[]).forEach(v=>{ html+='<td>'+(v!==''&&v!=null?v:'—')+'</td>'; });
+    html+='<td><b>'+(s.weighted!=null?s.weighted:'—')+'</b></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  html+='<p class="muted">说明：系统加权总分满分 90，另 10 分为手写实验心得（教师线下批改，不进系统）。导出的 Excel 按学号升序，含各模块综合分、系统加权总分，并留有"手写实验心得"空白列供您填写，最后一列总评会自动相加。</p></div>';
+  document.getElementById('content').innerHTML=html;
+}
+/* 按班级批量批改 / 发布（用于 4 个班分批上课、各自处理） */
+async function clsGrade(c){
+  const arr=GRADE_ALL.filter(s=>s.cls===c);
+  if(!confirm('确认批改「'+c+'」共 '+arr.length+' 人？')) return;
+  for(const s of arr){ await api('/api/teacher/grade','POST',{studentId:s.sid}); }
+  alert('「'+c+'」批改完成（'+arr.length+' 人）');
+  const r=await api('/api/teacher/students'); GRADE_ALL=r.data.students; paintScoreTable();
+}
+async function clsPublish(c){
+  const arr=GRADE_ALL.filter(s=>s.cls===c);
+  if(!confirm('发布后「'+c+'」的学生将看到成绩与错处，确定？')) return;
+  for(const s of arr){ await api('/api/teacher/publish','POST',{studentId:s.sid}); }
+  const r=await api('/api/teacher/students'); GRADE_ALL=r.data.students; paintScoreTable();
+}
+async function exportXlsxCls(c){ await doExport(c); }
+async function exportXlsx(){ await doExport(CUR_CLS); }
+async function doExport(cls){
+  if(!AUTH.token){ alert('请先登录'); return; }
+  const url='/api/teacher/export'+(cls?'?cls='+encodeURIComponent(cls):'');
+  const r=await fetch(url,{headers:{Authorization:'Bearer '+AUTH.token}});
+  if(r.status!==401){
+    const blob=await r.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(cls?cls+'_':'全部班级_')+'成绩单.xlsx';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  } else {
+    const j=await r.json().catch(()=>({}));
+    alert(j.error||'导出失败，请重新登录后再试');
+  }
+}
+
+/* 系统维护 */
+function renderSys(){
+  let html='<div class="card"><h2>系统维护</h2>';
+  html+='<p><button class="g" onclick="restoreReport()">恢复标准报表模板</button> 将资产负债表/利润表行项目重置为账户式 / 多步式标准格式（会清空已填的报表答案）。</p>';
+  html+='<p class="muted">学生访问地址：'+esc(location.origin)+'</p>';
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+async function restoreReport(){ if(!confirm('恢复标准报表模板将清空已填的报表答案，确定？'))return; const r=await api('/api/teacher/report-template','POST',{}); if(r.code===200)alert('已恢复标准报表模板'); }
+
+/* ================= 学生端 ================= */
+let STASKS=[], curMod=null, CUR=null, CUR_VIEW='module';
+async function renderStudent(){
+  const r=await api('/api/student/tasks');
+  if(r.code!==200){ document.getElementById('content').innerHTML='<p class="err">加载失败</p>'; return; }
+  STASKS=r.data.tasks; window._tasks=STASKS;
+  CUR_VIEW='module';
+  if(r.data.published && r.data.grades){ CUR_VIEW='result'; renderSidebar(); renderResultView(); return; }
+  curMod = curMod || (STASKS[0]&&STASKS[0].module.id);
+  renderSidebar();
+  enterModule(curMod);
+}
+function renderSidebar(){
+  let sb='<div class="ttl">实训模块</div>';
+  sb+='<div class="item '+(CUR_VIEW==='result'?'active':'')+'" onclick="showResult()">📊 我的成绩</div>';
+  STASKS.forEach(t=>{
+    sb+='<div class="item '+(CUR_VIEW==='module'&&curMod===t.module.id?'active':'')+'" onclick="enterModule(\''+t.module.id+'\')">模块'+t.module.order+'：'+esc(t.module.name)+'</div>';
+  });
+  document.getElementById('sidebar').innerHTML=sb;
+}
+async function showResult(){ CUR_VIEW='result'; renderSidebar(); renderResultView(); }
+async function enterModule(mid){
+  const r=await api('/api/student/tasks'); STASKS=r.data.tasks; window._tasks=STASKS;
+  curMod=mid; CUR_VIEW='module'; renderSidebar();
+  const t=findTask(mid); if(!t){ document.getElementById('content').innerHTML=''; return; }
+  if(t.module.order===8){ renderStmtModule(t); }
+  else {
+    const vl=(t.vouchers&&t.vouchers.list)||[];
+    CUR={mid, locked:!!(t.vouchers&&t.vouchers.locked), vouchers: vl.map(v=>({
+      date:v.date||'', number:v.number||'', attachments:v.attachments||'',
+      entries:(v.entries&&v.entries.length? v.entries : [{summary:'',account:'',debit:'',credit:'',posted:false}]).map(e=>({summary:e.summary||'',account:e.account||'',debit:e.debit||'',credit:e.credit||'',posted:!!e.posted})),
+      signs:(v.signs||{})
+    })) };
+    if(CUR.vouchers.length===0) CUR.vouchers.push(blankVoucher());
+    paintWorkspace();
+  }
+}
+function blankVoucher(){ return {date:'',number:'',attachments:'',entries:[{summary:'',account:'',debit:'',credit:'',posted:false}],signs:{}}; }
+function findTask(mid){ return STASKS.find(t=>t.module.id===mid); }
+function paintWorkspace(){
+  const t=findTask(CUR.mid); const locked=CUR.locked;
+  let h='<div class="card"><h2>模块'+t.module.order+'：'+esc(t.module.name)+'</h2>';
+  if(locked){
+    h+='<p class="ok">本模块凭证已提交并锁定。'+
+      '<button class="btn" style="margin-left:10px" onclick="withdrawVouchers()">撤回（解锁后可继续修改）</button></p>';
+  } else {
+    h+='<p class="muted">填写本模块凭证，可随时保存草稿；提交后锁定不可改。</p>';
+  }
+  h+='<div id="vList">';
+  CUR.vouchers.forEach((v,i)=> h+=voucherCardHtml(i,locked));
+  h+='</div>';
+  if(!locked){
+    h+='<div style="margin-top:10px"><button class="y" onclick="addVoucher()">＋ 新增凭证</button> ';
+    h+='<button class="btn" onclick="saveVouchers()">保存草稿</button> ';
+    h+='<button class="r" onclick="submitVouchers()">提交本模块（锁定）</button></div>';
+  }
+  h+='</div>';
+  document.getElementById('content').innerHTML=h;
+  bindVoucherInputs();
+  CUR.vouchers.forEach((v,i)=> recalcVoucher(i));
+}
+async function withdrawVouchers(){ if(!confirm('撤回后本模块解锁，可继续修改并重新提交？'))return; const r=await api('/api/student/withdraw','POST',{moduleId:CUR.mid}); if(r.code===200){ alert('已撤回，现在可继续修改'); enterModule(CUR.mid); } else alert(r.data.error||'撤回失败'); }
+function voucherCardHtml(i,locked){
+  const v=CUR.vouchers[i];
+  let h='<div class="voucher" style="margin-bottom:14px"><div class="v-wrap">';
+  h+='<div class="v-title">记 账 凭 证</div>';
+  /* 第二行：记字第X号（左上） | 日期（正中） | 附件X张（右上） */
+  h+='<div class="vhead-v">';
+  h+='<div class="v-left"><div class="v-no">记字第 <input data-v="'+i+'" data-k="number" value="'+esc(v.number||'')+'" '+(locked?'disabled':'')+' style="width:44px;text-align:center;border:none;border-bottom:1px solid #88A0B8;font-weight:700;color:#3A4A58;font-size:15px;background:transparent;"> 号</div></div>';
+  h+='<div class="v-date"><input data-v="'+i+'" data-k="date" value="'+esc(v.date||'')+'" '+(locked?'disabled':'')+' placeholder="    年    月    日" style="width:170px;text-align:center;border:none;background:transparent;font-family:inherit;font-size:16px;letter-spacing:4px;"></div>';
+  h+='<div class="v-right"><div class="v-att">附件 <input data-v="'+i+'" data-k="attachments" value="'+esc(v.attachments||'')+'" '+(locked?'disabled':'')+' style="width:44px;text-align:center;border:none;border-bottom:1px solid #88A0B8;font-weight:700;color:#3A4A58;font-size:15px;background:transparent;"> 张</div></div>';
+  h+='</div>';
+  /* 表格：摘要 | 总账科目 | 明细科目 | 借方金额 | 贷方金额 | 过账 |(操作)
+     借方/贷方金额表头 rowspan=2 跨两行，第二排只留「总账科目 / 明细科目」，
+     这样浏览器不会在金额列下方自动补空格子（原来的"空排"就是这么来的）。 */
+  h+='<table class="vtab"><thead><tr><th rowspan="2" style="width:16%">摘　要</th><th colspan="2" style="width:32%">科　　目</th>'
+    +'<th rowspan="2" style="width:21%">借方金额</th><th rowspan="2" style="width:21%">贷方金额</th>'
+    +(locked?'<th rowspan="2" style="width:4%">过账</th>':'')
+    +(!locked?'<th rowspan="2" style="width:3%">过账</th><th rowspan="2" style="width:4%">操作</th>':'')
+    +'</tr>';
+  h+='<tr><th style="width:16%">总账科目</th><th style="width:16%">明细科目</th></tr></thead><tbody id="vRows'+i+'">';
+  (v.entries||[]).forEach((e,j)=> h+=vRowHtml(i,j,e,locked));
+  h+='</tbody><tfoot><tr class="v-total-row"><td colspan="3">合　　计</td><td id="vDebit'+i+'" class="amt-cell"></td><td id="vCredit'+i+'" class="amt-cell"></td>'
+    +(locked?'<td></td>':'<td></td><td></td>')+'</tr></tfoot></table>';
+  if(!locked) h+='<div style="padding:4px 16px"><button class="y" onclick="addVRow('+i+')">＋ 添加分录行</button> <button class="r" onclick="delVoucher('+i+')">删除此凭证</button></div>';
+  /* 签字栏 */
+  h+='<div class="vsigns-row">';
+  const sg=v.signs||{};
+  [['sign1','会计主管'],['sign3','审核'],['sign2','记账'],['sign4','制单']].forEach(p=>{
+    h+='<div><label>'+p[1]+'：</label><input data-v="'+i+'" data-k="'+p[0]+'" value="'+esc(sg[p[0]]||'')+'" '+(locked?'disabled':'')+'></div>';
+  });
+  h+='</div><div class="vbalance" id="vBal'+i+'"></div></div></div>';
+  return h;
+}
+function vRowHtml(i,j,e,locked){
+  const sp = splitAcc(e.account);
+  return `<tr>
+    <td><input data-v="${i}" data-j="${j}" data-k="summary" value="${esc(e.summary||'')}" ${locked?'disabled':''}></td>
+    <td><input data-v="${i}" data-j="${j}" data-k="accountMain" value="${esc(sp.main)}" ${locked?'disabled':''}></td>
+    <td><input data-v="${i}" data-j="${j}" data-k="accountDetail" value="${esc(sp.detail)}" ${locked?'disabled':''}></td>
+    <td class="amt-cell"><input data-v="${i}" data-j="${j}" data-k="debit" value="${e.debit||''}" inputmode="decimal" ${locked?'disabled':''} oninput="recalcVoucher(${i})"></td>
+    <td class="amt-cell"><input data-v="${i}" data-j="${j}" data-k="credit" value="${e.credit||''}" inputmode="decimal" ${locked?'disabled':''} oninput="recalcVoucher(${i})"></td>
+    ${locked ? `<td style="text-align:center">${e.posted?'√':''}</td>` :
+      `<td style="text-align:center"><input type="checkbox" data-v="${i}" data-j="${j}" data-k="posted"${e.posted?' checked':''} disabled></td>`}
+    ${!locked ? `<td style="text-align:center"><span class="entry-del" onclick="delVRow(${i},${j})">删除</span></td>` : ''}
+  </tr>`;
+}
+
+/* ===== 金额格式化：千分位逗号（如 50000 → 50,000.00）===== */
+function fmtAmt(n){
+  if(n==null||n==='') return '';
+  const num=parseFloat(n)||0;
+  return num.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function recalcVoucher(i){
+  const v=CUR.vouchers[i]; let d=0,c=0;
+  (v.entries||[]).forEach(e=>{ d+=parseFloat(e.debit)||0; c+=parseFloat(e.credit)||0; });
+  const de=document.getElementById('vDebit'+i), ce=document.getElementById('vCredit'+i), bal=document.getElementById('vBal'+i);
+  if(!de) return;
+  de.textContent='¥ '+fmtAmt(d);
+  ce.textContent='¥ '+fmtAmt(c);
+  if(bal) bal.textContent=(Math.abs(d-c)<0.01?'':'⚠ 借贷差额：'+(d-c).toFixed(2));
+}
+/* 把凭证区所有输入框绑回 CUR.vouchers（重绘后必须重新绑定，否则输入不落库）
+   data-v="凭证序号"  + data-k="字段"（凭证级：date/number/attachments/sign1..sign4）
+   data-v="凭证序号" data-j="分录行号" + data-k="字段"（行级：summary/accountMain/accountDetail/debit/credit/posted） */
+function bindVoucherInputs(){
+  if(!CUR||!CUR.vouchers) return;
+  const els=document.querySelectorAll('#vList [data-v]');
+  for(let n=0;n<els.length;n++){
+    const el=els[n];
+    const vi=parseInt(el.getAttribute('data-v'),10);
+    const k=el.getAttribute('data-k');
+    const v=CUR.vouchers[vi];
+    if(!v||!k) continue;
+    const jAttr=el.getAttribute('data-j');
+    const isRow=(jAttr!==null&&jAttr!=='');
+    const j=isRow?parseInt(jAttr,10):-1;
+    const target=isRow?(v.entries[j]||{}):v;
+    if(isRow && !v.entries[j]) continue;
+
+    // 勾选框走 change，其余走 input
+    const evt=(el.type==='checkbox')?'change':'input';
+    el.addEventListener(evt,function(){
+      if(k==='accountMain'||k==='accountDetail'){
+        // 总账科目 + 明细科目 合并成一个 account 字段（用破折号连接）
+        const main=target.account?String(target.account).split('—')[0]:'';
+        const det=target.account?String(target.account).split('—').slice(1).join('—'):'';
+        const nm=(k==='accountMain')?el.value:main;
+        const nd=(k==='accountDetail')?el.value:det;
+        target.account=nd?(nm+'—'+nd):nm;
+      } else if(k==='posted'){
+        target.posted=!!el.checked;
+      } else if(k.indexOf('sign')===0){
+        /* 签字栏（会计主管/审核/记账/制单）必须存进 v.signs 里。
+           若按默认写成 v.sign4，保存时 serializeVouchers 只取 v.signs，
+           制单就会被丢掉——学生保存后重新进入会看到签字全空。 */
+        if(!v.signs) v.signs={};
+        v.signs[k]=el.value;
+      } else {
+        target[k]=el.value;
+      }
+      if(k==='debit'||k==='credit') recalcVoucher(vi);
+    });
+  }
+}
+function addVoucher(){ CUR.vouchers.push(blankVoucher()); paintWorkspace(); }
+function delVoucher(i){ if(CUR.vouchers.length>1){ CUR.vouchers.splice(i,1); paintWorkspace(); } else alert('至少保留一张凭证'); }
+function addVRow(i){ CUR.vouchers[i].entries.push({summary:'',account:'',debit:'',credit:'',posted:false}); paintWorkspace(); }
+function delVRow(i,j){ CUR.vouchers[i].entries.splice(j,1); paintWorkspace(); }
+function serializeVouchers(){ return CUR.vouchers.map(v=>({date:v.date,number:v.number,attachments:v.attachments,entries:v.entries.map(e=>({summary:e.summary,account:e.account,debit:e.debit,credit:e.credit,posted:!!e.posted})),signs:v.signs||{}})); }
+async function saveVouchers(){ const r=await api('/api/student/vouchers','POST',{moduleId:CUR.mid, list:serializeVouchers()}); if(r.code===200){ alert('草稿已保存'); } else alert(r.data.error||'保存失败'); }
+async function submitVouchers(){ if(!confirm('提交后本模块所有凭证锁定不可修改，确认提交？'))return; const r=await api('/api/student/vouchers/submit','POST',{moduleId:CUR.mid, list:serializeVouchers()}); if(r.code===200){ alert('提交成功'); enterModule(CUR.mid); } else alert(r.data.error||'提交失败'); }
+
+/* 模块8 报表 */
+function renderStmtModule(t){
+  let html='<div class="card"><h2>模块'+t.module.order+'：'+esc(t.module.name)+'</h2>';
+  html+='<p class="muted">本模块为财务报表，按模板逐格填列金额。</p>';
+  t.statements.forEach(s=>{
+    html+='<div class="card" style="background:#DCE4EC"><h2>'+esc(s.title)+'</h2>';
+    html+='<table><thead><tr><th>报表</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+    html+='<tr><td>'+esc(s.title)+'</td><td>'+(s.submitted?'<span class="pill">已提交</span>':'<span class="pill no">待填</span>')+'</td><td>'+(s.submitted?'<button class="btn" onclick="withdrawStmt(\''+s.id+'\')">撤回</button>':'<button class="btn" onclick="fillStmt(\''+s.id+'\')">填写</button>')+'</td></tr>';
+    html+='</tbody></table></div>';
+  });
+  html+='</div>';
+  document.getElementById('content').innerHTML=html;
+}
+function withdrawStmt(sid){
+  if(!confirm('撤回后该报表解锁，可继续修改并重新提交？'))return;
+  api('/api/student/withdraw','POST',{type:'statement',statementId:sid}).then(r=>{ if(r.code===200){ alert('已撤回，现在可继续修改'); enterModule(curMod); } else alert(r.data.error||'撤回失败'); });
+}
+function fillStmt(sid){
+  const t=findTask(curMod); const s=t.statements.find(x=>x.id===sid);
+  S_DRAFT = s && s.sub ? {cells:JSON.parse(JSON.stringify(s.sub.cells))} : {cells:{}};
+  let h='<div class="voucher"><div class="vh"><button class="y" onclick="enterModule(curMod)">← 返回模块</button><h3>'+esc(s.title)+'</h3></div>';
+  if(s.type==='balance'){
+    h+='<p class="muted">请填写表头三要素，并在「上年年末余额」「期末余额」两栏填列金额。</p>';
+    h+='<div id="sRows">'+balTableHtml(s,S_DRAFT.cells,'stu')+'</div>';
+  } else {
+    h+='<p class="muted">请填写表头三要素，并在「本期金额」栏填列金额。</p>';
+    h+='<div id="sRows">'+incTableHtml(s,S_DRAFT.cells,'stu')+'</div>';
+  }
+  h+='<div style="margin-top:14px"><button class="btn" onclick="saveStmtDraftV(\''+sid+'\')">保存草稿</button> <button class="r" onclick="submitStmtV(\''+sid+'\')">提交（锁定）</button></div></div>';
+  document.getElementById('content').innerHTML=h;
+  document.querySelectorAll('#sRows [data-r]').forEach(el=>{ el.addEventListener('input',()=>{ S_DRAFT.cells[el.getAttribute('data-r')]=el.value; }); });
+}
+async function saveStmtDraftV(sid){ const r=await api('/api/student/save/draft','POST',{kind:'statement', id:sid, cells:S_DRAFT.cells}); if(r.code===200){ alert('草稿已保存'); enterModule(curMod); } }
+async function submitStmtV(sid){ if(!confirm('提交后不可修改，确认提交？'))return; const r=await api('/api/student/submit/statement','POST',{statementId:sid, cells:S_DRAFT.cells}); if(r.code===200){ alert('提交成功'); enterModule(curMod); } else alert(r.data.error||'提交失败'); }
+
+/* 成绩 */
+async function renderResultView(){
+  const r=await api('/api/student/result');
+  if(!r.data.published){ document.getElementById('content').innerHTML='<div class="card"><h2>我的成绩</h2><p class="muted">老师尚未发布成绩，请耐心等待。</p></div>'; return; }
+  const g=r.data.grades;
+  let html='<div class="card"><h2>我的成绩（已发布）</h2>';
+  html+='<p>系统评定总分（满分 90）：<b>'+g.weighted+'</b> 分</p>';
+  html+='<table style="margin-top:6px"><thead><tr><th>模块</th><th>综合分(满分100)</th><th>权重</th><th>折算得分</th></tr></thead><tbody>';
+  MOD_NAMES.forEach((n,i)=>{
+    const ms=(g.moduleScores&&g.moduleScores[i]!=null)?g.moduleScores[i]:null;
+    const w=MOD_W[i]||0;
+    html+='<tr><td>模块'+(i+1)+' '+esc(n)+'</td><td>'+(ms!=null?ms:'—')+'</td><td>'+(w*100)+'%</td><td>'+(ms!=null?Math.round(ms*w*10)/10:'—')+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  html+='<p class="muted">实验报告总评 = 系统评定(满分90) + 手写实验心得(满分10，教师线下批改，不进系统)。</p>';
+  html+='<div id="resGroups"></div></div>';
+  document.getElementById('content').innerHTML=html;
+  let inner='';
+  Object.keys(g.details).forEach(k=>{ const d=g.details[k]; inner+='<div style="margin:6px 0;padding:8px;border:1px solid #C9D3DD;border-radius:6px"><b>'+esc(d.title)+'</b>：'+d.percent+' 分'+(d.errors&&d.errors.length?' <span class="muted">（'+d.errors.length+'处需改进）</span>':' <span class="ok">正确</span>'); if(d.errors&&d.errors.length){ inner+='<ul class="err" style="margin:4px 0">'+d.errors.map(e=>'<li>'+esc(e)+'</li>').join('')+'</ul>'; } inner+='</div>'; });
+  document.getElementById('resGroups').innerHTML=inner;
+}
+
+/* 打印本人凭证：一张 A4 纵向纸固定放两张凭证，每张固定占半页高，
+   从纸的正中间撕开后上下两张一样大；内容过多时自动缩小该张字号。 */
+async function printMine(){
+  const r=await api('/api/student/tasks'); const tasks=r.data.tasks;
+  // 先统计凭证总数，最后一张下面不再画撕开虚线
+  let total=0;
+  tasks.forEach(t=>{ if(t.module.order!==8) total += ((t.vouchers&&t.vouchers.list)||[]).length; });
+  let html='<div class="print-only">';
+  let gi=0; // 全局凭证序号：跨模块连续配对，保证每页恰好两张
+  tasks.forEach(t=>{
+    if(t.module.order===8){ t.statements.forEach(s=>{ if(s.sub) html+=stmtPrintHtml(s,s.sub); }); }
+    else {
+      ((t.vouchers&&t.vouchers.list)||[]).forEach(v=>{
+        const isSecond = (gi%2===1);            // 第2、4、6…张 → 其后分页
+        const tear     = (!isSecond) && (gi < total-1); // 同一页两张之间画撕开虚线
+        html+=voucherPrintHtml(v, t.module, isSecond, tear);
+        gi++;
+      });
+    }
+  });
+  html+='</div>';
+  // 把主样式表整份带进打印窗口，保证凭证样式（标题/表格/签字栏）与屏幕上完全一致
+  const mainCss=Array.prototype.map.call(document.querySelectorAll('style'),function(s){ return s.textContent; }).join('\n');
+  const w=window.open('','_blank');
+  w.document.write('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>打印凭证</title><style>'+
+    mainCss+'\n'+
+    '@page{size:A4 portrait;margin:8mm}'+
+    'html,body{margin:0;padding:0;background:#fff;color:#000;font-size:13px}'+
+    'table{margin:0}'+
+    '.print-only{display:block}'+   /* 打印窗口里直接可见，便于先在屏幕上确认排版 */
+    '</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  // 等布局稳定（字体/表格尺寸确定）后再量高缩放，否则量到的高度不准会缩错
+  const doPrint=function(){ fitPrintPages(w); w.focus(); w.print(); };
+  if(w.document.fonts && w.document.fonts.ready){
+    w.document.fonts.ready.then(function(){ w.setTimeout(doPrint, 120); }).catch(doPrint);
+  } else {
+    w.setTimeout(doPrint, 200);
+  }
+}
+// 内容超出半页时，自动缩小该张凭证（zoom 会同时缩小字号与行高），保证仍是半页高
+function fitPrintPages(w){
+  try{
+    const pages=w.document.querySelectorAll('.vpage');
+    for(let i=0;i<pages.length;i++){
+      const pg=pages[i], inner=pg.querySelector('.vshrink');
+      if(!inner) continue;
+      inner.style.zoom='';            // 先还原，避免二次调用时量到已缩放的值
+      const limit=pg.clientHeight;
+      let scale=100;
+      for(let k=0;k<14;k++){
+        if(inner.getBoundingClientRect().height <= limit) break;
+        scale-=5; if(scale<40){ scale=40; inner.style.zoom=0.4; break; }
+        inner.style.zoom=scale/100;
+      }
+    }
+  }catch(e){}
+}
+function voucherPrintHtml(sub,mod,breakAfter,tearLine){
+  const cls='vpage '+(breakAfter?'brk':'')+(tearLine?' tear':'');
+  let h='<div class="'+cls+'"><div class="vshrink"><div class="voucher" style="margin:0">';
+  /* 标题 */
+  h+='<div class="v-title">记 账 凭 证</div>';
+  /* 记字第X号（左上） | 日期（正中） | 附件X张（右上） */
+  h+='<div class="vhead-v">';
+  h+='<div class="v-left"><div class="v-no">记字第 '+esc(sub.number||'____')+' 号</div></div>';
+  h+='<div class="v-date">'+esc(sub.date||'　　　年　　月　　日')+'</div>';
+  h+='<div class="v-right"><div class="v-att">附件 '+esc(sub.attachments||'____')+' 张</div></div>';
+  h+='</div>';
+  /* 表格：摘要 | 总账科目 | 明细科目 | 借方金额 | 贷方金额 | 过账 —— 无分位格、无竖排附件列 */
+  h+='<table class="vtab"><thead><tr>'
+    +'<th rowspan="2" style="width:16%">摘　要</th><th colspan="2" style="width:32%">科　　目</th>'
+    +'<th rowspan="2" style="width:21%">借方金额</th><th rowspan="2" style="width:21%">贷方金额</th>'
+    +'<th rowspan="2" style="width:4%">过账</th>'
+    +'</tr><tr><th style="width:16%">总账科目</th><th style="width:16%">明细科目</th></tr></thead><tbody>';
+  (sub.entries||[]).forEach(function(e){
+    const sp=splitAcc(e.account);
+    h+='<tr><td>'+esc(e.summary||'')+'</td><td>'+esc(sp.main)+'</td><td>'+esc(sp.detail)+'</td>';
+    h+='<td class="amt-cell">'+esc(e.debit||'')+'</td>';
+    h+='<td class="amt-cell">'+esc(e.credit||'')+'</td>';
+    h+='<td style="text-align:center">'+(e.posted?'√':'')+'</td></tr>';
+  });
+  /* 合计行（简单合计，无数量单价，无分位格） */
+  let td=0,tc=0;
+  (sub.entries||[]).forEach(function(e){ td+=parseFloat(e.debit)||0; tc+=parseFloat(e.credit)||0; });
+  h+='</tbody><tfoot><tr class="v-total-row"><td colspan="3">合　　计</td>'
+    +'<td class="amt-cell">¥ '+fmtAmt(td)+'</td><td class="amt-cell">¥ '+fmtAmt(tc)+'</td><td></td></tr>'
+    +'</tfoot></table>';
+  /* 签字栏 */
+  const sg=sub.signs||{};
+  h+='<div class="vsigns-row"><div>会计主管：'+esc(sg.sign1||'')+'</div><div>审核：'+esc(sg.sign3||'')+'</div><div>记账：'+esc(sg.sign2||'')+'</div><div>制单：'+esc(sg.sign4||'')+'</div></div>';
+  h+='</div></div></div>';
+  return h;
+}
+function balPrintCell(r,cells){
+  if(!r) return '<td></td><td class="amt"></td><td class="amt"></td>';
+  const vc=cells[r.id]==null?'':cells[r.id];
+  const vp=cells[r.id+'#p']==null?'':cells[r.id+'#p'];
+  const lbl=BAL_TOTAL_RE.test(r.label)?('<b>'+esc(r.label)+'</b>'):esc(r.label);
+  return '<td>'+lbl+'</td><td class="amt">'+esc(vp)+'</td><td class="amt">'+esc(vc)+'</td>';
+}
+function stmtPrintHtml(s,sub){
+  if(s.type==='balance'){
+    const cells=(sub&&sub.cells)||{};
+    const H=s.head||[]; const hv=function(id){ return esc(cells[id]==null?'':cells[id]); };
+    const grid=balanceGrid(s.left||[],s.right||[]);
+    let h='<div class="stmt"><div style="text-align:center;font-weight:700;font-size:18px">'+esc(s.title)+'</div>';
+    h+=stmtHeadPrintHtml(s,cells,'bh');
+    h+='<table><thead><tr>'
+      +'<th style="width:26%">资产</th><th style="width:12%">上年年末余额</th><th style="width:12%">期末余额</th>'
+      +'<th style="width:26%">负债和所有者权益</th><th style="width:12%">上年年末余额</th><th style="width:12%">期末余额</th>'
+      +'</tr></thead><tbody>';
+    grid.forEach(function(p){
+      h+='<tr>'+balPrintCell(p.l,cells)+balPrintCell(p.r,cells)+'</tr>';
+    });
+    h+='</tbody></table></div>';
+    return h;
+  }
+  // 利润表：与资产负债表一致，上方带编制单位 / 日期 / 单位 三要素
+  const cells2=(sub&&sub.cells)||{};
+  let h='<div class="stmt"><div style="text-align:center;font-weight:700;font-size:18px">'+esc(s.title)+'</div>';
+  h+=incTableHtml(s,cells2,'print');
+  h+='</div>';
+  return h;
+}
+</script>
+</body>
+</html>

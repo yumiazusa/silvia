@@ -1,0 +1,23 @@
+[Unit]
+Description=Silvia accounting practice platform
+After=network.target
+
+[Service]
+Type=simple
+User=silvia
+Group=silvia
+WorkingDirectory=/opt/silvia
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+Environment=DATA_DIR=/var/lib/silvia
+ExecStart=/usr/bin/node /opt/silvia/server.js
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/silvia
+
+[Install]
+WantedBy=multi-user.target
