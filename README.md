@@ -11,6 +11,7 @@
 1. 用有 GitHub SSH 权限的账号拉代码：
 
    ```bash
+   sudo install -d -o "$USER" -g "$(id -gn)" -m 755 /opt/silvia
    git clone git@github.com:yumiazusa/silvia.git /opt/silvia
    cd /opt/silvia
    git status --short
